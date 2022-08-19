@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# siv4 reincarnated with ALL unicode block elements (true color mode only)
+#
+# We now use more modern escape sequences which allow the use of 24 bit
+# colors.
+
+size="$(($(tput cols) - 2))x$(($(tput lines) - 2))"
+
+while getopts s:n name
+do
+    case $name in
+        s)
+            size="$OPTARG"
+            ;;
+        n)
+            unscaled=1
+            ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+wid="${size%x*}"
+hei="${size#*x}"
+hei=$((hei * 2))
+(( hei % 2 != 0 )) && (( hei++ ))
+
+hei=$((hei * 2))
+wid=$((wid * 2))
+
+distorted_size=${wid}x${hei}
+
+if (( unscaled ))
+then
+    sizeargs=()
+else
+    sizeargs=(-resize "$distorted_size")
+fi
+
+while (( $# > 0 ))
+do
+
+    echo "convert -quiet -compress none -depth 8 "${sizeargs[@]}" "$1" "ppm:-""
+        
+    # Convert the image into a PPM image which can easily be read by
+    # awk.
+    convert \
+        -quiet \
+        -compress none \
+        -depth 8 \
+        "${sizeargs[@]}" \
+        "$1" "ppm:-" |
+        grep -v '^$' | grep -v '^#' |
+    ./my-poc-helper.py
+
+    # One empty line between two images.
+    shift
+    if (( $# > 0 ))
+    then
+        echo
+    fi
+done
