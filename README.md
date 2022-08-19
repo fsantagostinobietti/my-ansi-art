@@ -3,14 +3,15 @@ Current ANSI Art image implementations use just one char "▀" (half block) to d
 
 This PoC aims to verify that using full range of ANSI block chars we can achive better resolution using the same number of chars.
 
-Original image
+## siv4 vs my-poc
 
-![Original image](doc/imgs/big_buck_bunny_bird.jpg)
+#### original image 
 
-siv4 vs my-poc
+<img src="doc/imgs/big_buck_bunny_bird.jpg" width=50%>
 
-|  siv4 algo  | my-poc algo |
+| siv4  | my-poc  |
 | --- | --- |
+|  $ ./siv4 doc/imgs/big_buck_bunny_bird.jpg  | $ ./my-poc doc/imgs/big_buck_bunny_bird.jpg |
 | ![Original image](doc/imgs/siv4-ANSI-Art_6864-chars.png) | ![Original image](doc/imgs/my-PoC-ANSI-Art_6864-chars.png) |
 
 ### References (aka "Standing on the shoulders of giants")
