@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # 4x2 (rows x cols) size window of original scaled image that will be replaced 
 # with a single unicode block char. We'll call it "char collapse window"
