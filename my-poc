@@ -25,8 +25,9 @@ hei="${size#*x}"
 hei=$((hei * 2))
 (( hei % 2 != 0 )) && (( hei++ ))
 
-hei=$((hei * 2))
-wid=$((wid * 2))
+# my-poc needs an higher resolution for best result
+hei=$((hei * 4))
+wid=$((wid * 4))
 
 distorted_size=${wid}x${hei}
 

@@ -21,6 +21,12 @@ def fg_rgb(r: int , g: int , b: int) -> str:
 def bg_rgb(r: int , g: int , b: int) -> str:
     return f"\u001b[48;2;{r};{g};{b}m"
 
+def fg_gray(gray: int) -> str:
+    return f"\u001b[38;2;{gray};{gray};{gray}m"
+
+def bg_gray(gray: int) -> str:
+    return f"\u001b[48;2;{gray};{gray};{gray}m"
+
 def color_reset() -> str:
     return "\u001b[0m"
 
@@ -187,10 +193,12 @@ BLOCK_CHAR = {
 STATS = {}
 
 class CharWindow:
-    """Char collapse window: 4x2 (rows x cols) sized pixel"""
+    """Char collapse window: RxC (rows x cols) sized pixel"""
+    R, C = 8, 4 #4, 2  # rows, cols
     
     def __init__(self) -> None:
         self.char_window_rgb = [] # list of rgb tuple
+        self.grayscale = None  # list of gray values
 
     def reset(self):
         self.char_window_rgb = []
@@ -199,17 +207,30 @@ class CharWindow:
         self.char_window_rgb.extend( row_rgb )
 
     def print(self) -> None:
-        for r in range(0, 8, 4):
-            for c in range(2):
+        """Test purposes"""
+        for r in range(0, CharWindow.R*CharWindow.C, CharWindow.R):
+            for c in range(CharWindow.C):
                 fg = self.char_window_rgb[r+c+0]
-                bg = self.char_window_rgb[r+c+2]
+                bg = self.char_window_rgb[r+c+CharWindow.C]
                 print( fg_rgb(*fg) + bg_rgb(*bg) + "▀" + color_reset(), end="" )
             print()
-
+        print()
+        # grayscale
+        for r in range(0, CharWindow.R*CharWindow.C, CharWindow.R):
+            for c in range(CharWindow.C):
+                fg = to_grayscale( *self.char_window_rgb[r+c+0] )
+                bg = to_grayscale( *self.char_window_rgb[r+c+CharWindow.C] )
+                print( fg_gray(fg) + bg_gray(bg) + "▀" + color_reset(), end="" )
+            print()
 
     def get_upscaled_rgb(self, r: int, c: int) -> tuple[int, int, int]:
         """Upscaled window is 8x8 pixel. So 'r' and 'c' range in [0, 7]."""
-        return self.char_window_rgb[ (r//2) * 2 + (c//4) ]
+        if (CharWindow.R,CharWindow.C) == (4,2):
+            return self.char_window_rgb[ (r//2) * 2 + (c//4) ]
+        elif (CharWindow.R,CharWindow.C) == (8,4):
+            return self.char_window_rgb[ r*4 + (c//2) ]
+        else:
+            raise Exception("Usupported (R,C) !")
 
     def best_ansi_char(self) -> str:
         best_char, best_fg, best_bg, best_score = None, None, None, math.inf
@@ -280,14 +301,14 @@ img_rgb = list( zip( *[iter(img_rgb)]*3 ) )
 
 def build_window(r: int, c: int) -> CharWindow:
     win = CharWindow()
-    for dr in range(4):
-        idx = (4*r+dr) * cols
-        win.add_row_rgb( [img_rgb[idx + c*2+0], img_rgb[idx + c*2+1]] )
+    for dr in range(CharWindow.R):
+        base = (CharWindow.R*r+dr) * cols
+        win.add_row_rgb( [ img_rgb[base + c*CharWindow.C+dc]  for dc in range(CharWindow.C) ] )
     return win
 
 # TEST
 def test():
-    tst =  build_window( random.randint(0, rows//4-1), random.randint(0, cols//2-1) )
+    tst =  build_window( random.randint(0, rows//CharWindow.R-1), random.randint(0, cols//CharWindow.C-1) )
     tst.print()
     for char in BLOCK_CHAR:
         fg,bg = compute_fg_bg(char,tst)
@@ -299,8 +320,8 @@ def test():
 #quit()
 
 
-for r in range(rows//4):
-    for c in range(cols//2):
+for r in range(rows//CharWindow.R):
+    for c in range(cols//CharWindow.C):
         win = build_window(r, c)
         print(win.best_ansi_char(), end='')
     print() # new line and flush
