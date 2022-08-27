@@ -197,7 +197,7 @@ STATS = {}
 
 class CharWindow:
     """Char collapse window: RxC (rows x cols) sized pixel"""
-    R, C = 8, 4 #4, 2  # rows, cols
+    R, C = 8, 8  # rows, cols
     
     def __init__(self) -> None:
         self.window_rgb = [] # list of rgb tuple
@@ -208,7 +208,7 @@ class CharWindow:
     def __to_grayscale(self) -> list[tuple[int,int,int]]:
         return [grayscale(*rgb) for rgb in self.window_rgb]
 
-    def __to_bw(self) -> int:
+    def __to_bw(self) -> tuple[int, float]:
         """ """
         # convert into grayscale
         gray_vv = [grayscale(*rgb) for rgb in self.window_rgb]
@@ -220,10 +220,9 @@ class CharWindow:
         #print("mean:",mean," variance:",variance)
         bw_bitmap = 0b0
         for g,_,_ in gray_vv:
-            # upscale 8x8
-            bw_bitmap = (bw_bitmap<<2) | (0b11 if g>mean else 0b00)
+            bw_bitmap = (bw_bitmap<<1) | (0b1 if g>mean else 0b0)
         #print("bw bitmanp:", bin(bw_bitmap))
-        return bw_bitmap
+        return bw_bitmap, variance
 
     def __grayscale_stats(self) -> tuple[float, float]:
         gray_vv = [grayscale(*rgb) for rgb in self.window_rgb]
@@ -257,7 +256,7 @@ class CharWindow:
         char, _, _, _ = self.best_char()
         print("grayscale: best char:", char)
         # black/white
-        window_bw = self.__to_bw()
+        window_bw, _ = self.__to_bw()
         for r in range(0, CharWindow.R*2*CharWindow.C, 2*2*CharWindow.C):
             for c in range(CharWindow.C):
                 fg = 255 * bit(window_bw, r+2*c+0, CharWindow.R*2*CharWindow.C)
@@ -274,6 +273,8 @@ class CharWindow:
             return self.window_rgb[ (r//2) * 2 + (c//4) ]
         elif (CharWindow.R,CharWindow.C) == (8,4):
             return self.window_rgb[ r*4 + (c//2) ]
+        elif (CharWindow.R,CharWindow.C) == (8,8):
+            return self.window_rgb[ r*8 + c]
         else:
             raise Exception("Usupported (R,C) !")
 
@@ -294,28 +295,19 @@ class CharWindow:
         return best_char, best_fg, best_bg, best_loss
 
     def best_char_bw(self) -> tuple[str, tuple[int, int, int], tuple[int, int, int], int]:
-        window_bw = self.__to_bw()
+        window_bw, variance = self.__to_bw()
         best_char, best_loss = None, math.inf
-        for char, char_bitmap in BLOCK_CHAR.items():
-            l = (window_bw ^ char_bitmap).bit_count()
-            loss = min(l, 64-l) 
-            if loss < best_loss:
-                best_char, best_loss = char, loss
+        if variance<5.0:
+            # probably background part of image
+            best_char = "▀"
+        else:
+            for char, char_bitmap in BLOCK_CHAR.items():
+                l = (window_bw ^ char_bitmap).bit_count()
+                loss = min(l, 64-l) 
+                if loss < best_loss:
+                    best_char, best_loss = char, loss
         fg,bg = compute_fg_bg(best_char, self)
         return best_char, fg, bg, best_loss
-
-    def best_char2(self) -> tuple[str, tuple[int, int, int], tuple[int, int, int], int]:
-        """ Use black/white to detect best char """
-        # backup rgb list
-        rgb_orig = self.window_rgb.copy()
-        self.__to_grayscale()
-        self.__to_bw()
-        char,_,_,_ = self.best_char()
-        # restore orig list
-        self.window_rgb = rgb_orig
-        fg,bg = compute_fg_bg(char, self)
-        loss = compute_loss(self, char, fg, bg)
-        return char, fg, bg, loss
 
     def printable_ansi_char(self, char: str, fg: int, bg: int) -> str:
         #STATS[best_char] = STATS.get(best_char, 0) + 1
@@ -406,7 +398,7 @@ def test():
 for r in range(rows//CharWindow.R):
     for c in range(cols//CharWindow.C):
         win = build_window(r, c)
-        char, fg, bg, _ = win.best_char() # win.best_char_bw() 
+        char, fg, bg, _ = win.best_char_bw()  #win.best_char() # win.best_char_bw() 
         print(win.printable_ansi_char(char, fg, bg), end='')
     print() # new line and flush
         

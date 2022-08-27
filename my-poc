@@ -22,12 +22,23 @@ shift $((OPTIND - 1))
 
 wid="${size%x*}"
 hei="${size#*x}"
-hei=$((hei * 2))
+hei=$((hei * 2)) # take into account 1/2 char aspect ratio
 (( hei % 2 != 0 )) && (( hei++ ))
 
-# my-poc needs an higher resolution for best result
+# image size
+W=$(identify -format '%w' $1)
+H=$(identify -format '%h' $1)
+
+# compute wid x hei that fits terminal window keeping aspect ratio
+# wid = min(wid, hei*W/H)
+w=$(( hei * W / H))
+wid=$(( wid<w ?wid :w))
+# hei = wid*H/W
+hei=$(( wid * H / W))
+
+# my-poc needs an 8x8 window for best result
 hei=$((hei * 4))
-wid=$((wid * 4))
+wid=$((wid * 4 * 2))
 
 distorted_size=${wid}x${hei}
 
@@ -35,7 +46,7 @@ if (( unscaled ))
 then
     sizeargs=()
 else
-    sizeargs=(-resize "$distorted_size")
+    sizeargs=(-resize "$distorted_size"\!)
 fi
 
 while (( $# > 0 ))
