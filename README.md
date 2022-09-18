@@ -21,3 +21,6 @@ More exemples [here](examples.md)
 * (Almost) square pixels in the terminal - http://www.uninformativ.de/blog/postings/2016-12-17/0/POSTING-en.html
 * ANSI Block Elements - https://en.wikipedia.org/wiki/Block_Elements
 * https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit
+
+### Similar projects
+* https://github.com/stefanhaustein/TerminalImageViewer
