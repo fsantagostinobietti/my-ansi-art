@@ -19,9 +19,12 @@ More exemples [here](examples.md)
 ## Video player integration
 I've integrated this algorithm in MPV opensource video player. See my fork with [new TCT algorithm](https://github.com/fsantagostinobietti/mpv/tree/tct-extended).
 You can see video comparison:
-| 'half-blocks' original algo  | 'multi-blocks' new algo |
-| --- | --- |
-|  https://user-images.githubusercontent.com/6057026/191210663-6cb56148-c3da-4792-a115-75cf79b20660.mp4 | https://user-images.githubusercontent.com/6057026/191210823-c5482fd3-2bb3-4200-b34e-8c1583a9c340.mp4 |
+
+### 'half-blocks' original algo 
+https://user-images.githubusercontent.com/6057026/191210663-6cb56148-c3da-4792-a115-75cf79b20660.mp4 
+
+###  'multi-blocks' new algo
+https://user-images.githubusercontent.com/6057026/191210823-c5482fd3-2bb3-4200-b34e-8c1583a9c340.mp4
 
 
 ### References (aka "Standing on the shoulders of giants")
