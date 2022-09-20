@@ -16,6 +16,14 @@ This PoC aims to verify that using full range of ANSI block chars we can achive 
 
 More exemples [here](examples.md)
 
+## Video player integration
+I've integrated this algorithm in MPV opensource video player. See my fork with [new TCT algorithm](https://github.com/fsantagostinobietti/mpv/tree/tct-extended).
+You can see video comparison:
+| 'half-blocks' original algo  | 'multi-blocks' new algo |
+| --- | --- |
+|  https://user-images.githubusercontent.com/6057026/191210663-6cb56148-c3da-4792-a115-75cf79b20660.mp4 | https://user-images.githubusercontent.com/6057026/191210823-c5482fd3-2bb3-4200-b34e-8c1583a9c340.mp4 |
+
+
 ### References (aka "Standing on the shoulders of giants")
 * Shell Image Viewer v4 - https://www.uninformativ.de/git/bin-pub/file/siv4.html
 * (Almost) square pixels in the terminal - http://www.uninformativ.de/blog/postings/2016-12-17/0/POSTING-en.html
